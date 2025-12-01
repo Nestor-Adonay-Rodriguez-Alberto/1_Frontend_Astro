@@ -1,7 +1,7 @@
 export type SessionData = {
-	token: string;
 	username: string;
 	loginAt: string;
+	strategy: 'json' | 'basic';
 };
 
 const STORAGE_KEY = 'astro-auth-session';

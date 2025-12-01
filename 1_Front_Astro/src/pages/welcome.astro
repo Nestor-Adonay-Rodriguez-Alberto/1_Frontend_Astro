@@ -16,8 +16,8 @@ import Layout from '../layouts/Layout.astro';
 		<section class="card">
 			<ul class="session-info">
 				<li>
-					<span>Token actual</span>
-					<code data-token>No disponible</code>
+					<span>Modo de autenticación</span>
+					<strong data-strategy>Desconocido</strong>
 				</li>
 				<li>
 					<span>Hora de login</span>
@@ -39,7 +39,8 @@ import Layout from '../layouts/Layout.astro';
 			window.location.replace('/');
 		} else {
 			document.querySelector('[data-username]').textContent = session.username;
-			document.querySelector('[data-token]').textContent = session.token;
+			document.querySelector('[data-strategy]').textContent =
+				session.strategy === 'basic' ? 'Basic Auth (/auth/login-basic)' : 'JSON Body (/auth/login)';
 			document.querySelector('[data-login-at]').textContent = new Date(session.loginAt).toLocaleString();
 		}
 	</script>
@@ -94,11 +95,6 @@ import Layout from '../layouts/Layout.astro';
 
 	.actions .ghost {
 		color: rgba(226, 232, 240, 0.9);
-	}
-
-	code {
-		word-break: break-all;
-		display: block;
 	}
 
 	@media (max-width: 640px) {

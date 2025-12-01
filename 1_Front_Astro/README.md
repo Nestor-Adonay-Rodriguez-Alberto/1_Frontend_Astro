@@ -2,16 +2,16 @@
 
 Pequeño frontend creado con Astro que consume un Worker de Cloudflare (Hono) con dos endpoints:
 
-- `POST /login` valida credenciales y responde con un token
-- `POST /logout` invalida el token
+- `POST /auth/login` recibe `username` y `password` en un cuerpo JSON
+- `POST /auth/login-basic` espera el header `Authorization: Basic …`
 
 El sitio expone tres rutas:
 
 | Ruta | Descripción |
 | --- | --- |
-| `/` | Formulario de inicio de sesión que persiste el token en `localStorage` |
-| `/welcome` | Página protegida que muestra los datos de la sesión |
-| `/logout` | Llama al endpoint de logout y limpia la sesión local |
+| `/` | Formulario de inicio de sesión que permite alternar entre JSON y Basic Auth |
+| `/welcome` | Página protegida que recuerda usuario, hora y modo utilizado |
+| `/logout` | Elimina la sesión local (no hace falta endpoint remoto) |
 
 ## Configurar variables
 

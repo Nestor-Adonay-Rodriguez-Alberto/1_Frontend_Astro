@@ -6,15 +6,34 @@ export type LoginPayload = {
 	password: string;
 };
 
-export type LoginResponse = {
-	success: boolean;
-	token?: string;
+type WorkerLoginResponse = {
+	ok: boolean;
 	message?: string;
-	user?: string;
 };
 
-export async function login(payload: LoginPayload): Promise<LoginResponse> {
-	const response = await fetch(`${workerBaseUrl}/login`, {
+export type LoginResponse = {
+	success: boolean;
+	message?: string;
+	strategy: 'json' | 'basic';
+};
+
+async function parseResponse(response: Response): Promise<WorkerLoginResponse> {
+	let data: WorkerLoginResponse | null = null;
+	try {
+		data = (await response.json()) as WorkerLoginResponse;
+	} catch (error) {
+		data = { ok: false, message: 'Respuesta inesperada del Worker' };
+	}
+
+	if (!response.ok) {
+		throw new Error(data?.message || 'Credenciales inválidas o servicio no disponible');
+	}
+
+	return data;
+}
+
+export async function loginWithJson(payload: LoginPayload): Promise<LoginResponse> {
+	const response = await fetch(`${workerBaseUrl}/auth/login`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -22,20 +41,34 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 		body: JSON.stringify(payload),
 	});
 
-	if (!response.ok) {
-		throw new Error('Credenciales inválidas o servicio no disponible');
-	}
-
-	return (await response.json()) as LoginResponse;
+	const data = await parseResponse(response);
+	return { success: data.ok, message: data.message, strategy: 'json' };
 }
 
-export async function logout(token?: string): Promise<void> {
-	await fetch(`${workerBaseUrl}/logout`, {
+function encodeBasicCredentials(username: string, password: string): string {
+	if (typeof btoa === 'function') {
+		return btoa(`${username}:${password}`);
+	}
+
+	if (typeof Buffer !== 'undefined') {
+		return Buffer.from(`${username}:${password}`, 'binary').toString('base64');
+	}
+
+	throw new Error('Tu entorno no soporta codificación Base64 requerida para Basic Auth');
+}
+
+export async function loginWithBasic(payload: LoginPayload): Promise<LoginResponse> {
+	const response = await fetch(`${workerBaseUrl}/auth/login-basic`, {
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/json',
-			...(token ? { Authorization: `Bearer ${token}` } : {}),
+			Authorization: `Basic ${encodeBasicCredentials(payload.username, payload.password)}`,
 		},
-		body: token ? JSON.stringify({ token }) : undefined,
 	});
+
+	const data = await parseResponse(response);
+	return { success: data.ok, message: data.message, strategy: 'basic' };
+}
+
+export async function login(payload: LoginPayload, mode: 'json' | 'basic' = 'json'): Promise<LoginResponse> {
+	return mode === 'basic' ? loginWithBasic(payload) : loginWithJson(payload);
 }

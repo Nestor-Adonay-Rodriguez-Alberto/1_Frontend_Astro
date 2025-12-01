@@ -11,9 +11,9 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 			<p class="eyebrow">Demo Astro + Cloudflare Worker</p>
 			<h1>Inicia sesión para ver la página protegida</h1>
 			<p>
-				Este ejemplo usa un Worker ya desplegado para validar credenciales mediante los endpoints
-				<code>/login</code> y <code>/logout</code>. Ingresa el usuario y contraseña configurados en el
-				Worker para continuar.
+				El Worker expone dos rutas: <code>POST /auth/login</code> (JSON) y
+				<code>POST /auth/login-basic</code> (Authorization header). Desde aquí puedes probar ambas sin
+				reconfigurar nada en el backend.
 			</p>
 		</section>
 
@@ -27,12 +27,22 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 					<span>Contraseña</span>
 					<input type="password" name="password" placeholder="••••••" required />
 				</label>
+				<fieldset class="mode">
+					<legend>Modo de autenticación</legend>
+					<label>
+						<input type="radio" name="mode" value="json" checked />
+						JSON (`/auth/login`)
+					</label>
+					<label>
+						<input type="radio" name="mode" value="basic" />
+						Basic (`/auth/login-basic`)
+					</label>
+				</fieldset>
 				<button type="submit">Iniciar sesión</button>
 				<p class="status" data-status>Ingresa tus credenciales para continuar.</p>
 			</form>
 			<p class="hint">
-				El Worker configurado actualmente es:
-				<strong>{workerUrl}</strong>
+				El Worker configurado actualmente es: <strong>{workerUrl}</strong>
 			</p>
 		</section>
 	</main>
@@ -61,15 +71,16 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 			submitButton?.setAttribute('disabled', 'true');
 
 			try {
-				const result = await login({ username, password });
-				if (!result.success || !result.token) {
+				const mode = formData.get('mode') === 'basic' ? 'basic' : 'json';
+				const result = await login({ username, password }, mode);
+				if (!result.success) {
 					throw new Error(result.message || 'No se pudo iniciar sesión');
 				}
 
 				saveSession({
-					token: result.token,
-					username: result.user || username,
+					username,
 					loginAt: new Date().toISOString(),
+					strategy: result.strategy,
 				});
 
 				setStatus('Ingreso exitoso, redirigiendo…', 'success');
@@ -125,6 +136,33 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 		color: #0f172a;
 		background: linear-gradient(135deg, #a5b4fc, #c084fc);
 		transition: transform 0.2s ease, opacity 0.2s ease;
+	}
+
+	.mode {
+		border: 1px solid rgba(148, 163, 184, 0.25);
+		border-radius: 0.9rem;
+		padding: 1rem 1.25rem;
+		background: rgba(15, 23, 42, 0.5);
+	}
+
+	.mode legend {
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.15em;
+		color: rgba(148, 163, 184, 0.9);
+		margin-bottom: 0.5rem;
+	}
+
+	.mode label {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.9rem;
+		color: rgba(226, 232, 240, 0.85);
+	}
+
+	.mode label + label {
+		margin-top: 0.35rem;
 	}
 
 	button:disabled {

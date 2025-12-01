@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Cerrar sesión" description="Finaliza la sesión activa contra el Worker de autenticación">
+<Layout title="Cerrar sesión" description="Finaliza la sesión local protegida en Astro">
 	<main>
 		<section class="card">
 			<h1>Hasta pronto 👋</h1>
@@ -12,10 +12,9 @@ import Layout from '../layouts/Layout.astro';
 	</main>
 
 	<script type="module">
-		import { logout } from '../lib/api';
 		import { readSession, clearSession } from '../lib/session';
 
-		async function performLogout() {
+		(function performLogout() {
 			const messageEl = document.querySelector('[data-message]');
 			const session = readSession();
 			if (!session) {
@@ -23,17 +22,9 @@ import Layout from '../layouts/Layout.astro';
 				return;
 			}
 
-			try {
-				await logout(session.token);
-				messageEl.textContent = 'Sesión cerrada correctamente.';
-			} catch (error) {
-				messageEl.textContent = 'No se pudo notificar al Worker, pero la sesión local fue eliminada.';
-			} finally {
-				clearSession();
-			}
-		}
-
-		performLogout();
+			clearSession();
+			messageEl.textContent = 'Sesión local eliminada. Puedes volver a iniciar cuando gustes.';
+		})();
 	</script>
 </Layout>
 
