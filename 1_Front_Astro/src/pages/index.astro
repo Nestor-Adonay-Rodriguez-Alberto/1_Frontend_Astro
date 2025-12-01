@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import loginScriptUrl from '../scripts/login.ts?url';
 
 const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 	'https://1_backend_hono.nestor-adonay-rodriguez-alberto.workers.dev';
@@ -47,52 +48,7 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 		</section>
 	</main>
 
-	<script type="module">
-		import { login } from '/src/lib/api.ts';
-		import { saveSession } from '/src/lib/session.ts';
-
-		const form = document.querySelector('#login-form');
-		const statusElem = document.querySelector('[data-status]');
-		const submitButton = form?.querySelector('button');
-
-		const setStatus = (message, variant = 'default') => {
-			if (!statusElem) return;
-			statusElem.textContent = message;
-			statusElem.dataset.variant = variant;
-		};
-
-		form?.addEventListener('submit', async (event) => {
-			event.preventDefault();
-			const formData = new FormData(form);
-			const username = String(formData.get('username'));
-			const password = String(formData.get('password'));
-
-			setStatus('Validando credenciales…', 'info');
-			submitButton?.setAttribute('disabled', 'true');
-
-			try {
-				const mode = formData.get('mode') === 'basic' ? 'basic' : 'json';
-				const result = await login({ username, password }, mode);
-				if (!result.success) {
-					throw new Error(result.message || 'No se pudo iniciar sesión');
-				}
-
-				saveSession({
-					username,
-					loginAt: new Date().toISOString(),
-					strategy: result.strategy,
-				});
-
-				setStatus('Ingreso exitoso, redirigiendo…', 'success');
-				window.location.href = '/welcome';
-			} catch (error) {
-				const message = error instanceof Error ? error.message : 'Error inesperado';
-				setStatus(message, 'error');
-			} finally {
-				submitButton?.removeAttribute('disabled');
-			}
-		});
-	</script>
+	<script type="module" src={loginScriptUrl}></script>
 </Layout>
 
 <style>

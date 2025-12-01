@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import welcomeScriptUrl from '../scripts/welcome.ts?url';
 ---
 
 <Layout title="Bienvenido" description="Zona protegida accesible tras un login exitoso">
@@ -31,19 +32,7 @@ import Layout from '../layouts/Layout.astro';
 		</section>
 	</main>
 
-	<script type="module">
-		import { readSession } from '/src/lib/session.ts';
-
-		const session = readSession();
-		if (!session) {
-			window.location.replace('/');
-		} else {
-			document.querySelector('[data-username]').textContent = session.username;
-			document.querySelector('[data-strategy]').textContent =
-				session.strategy === 'basic' ? 'Basic Auth (/auth/login-basic)' : 'JSON Body (/auth/login)';
-			document.querySelector('[data-login-at]').textContent = new Date(session.loginAt).toLocaleString();
-		}
-	</script>
+	<script type="module" src={welcomeScriptUrl}></script>
 </Layout>
 
 <style>

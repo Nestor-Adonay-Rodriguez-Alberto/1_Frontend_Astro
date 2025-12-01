@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import logoutScriptUrl from '../scripts/logout.ts?url';
 ---
 
 <Layout title="Cerrar sesión" description="Finaliza la sesión local protegida en Astro">
@@ -11,21 +12,7 @@ import Layout from '../layouts/Layout.astro';
 		</section>
 	</main>
 
-	<script type="module">
-		import { readSession, clearSession } from '/src/lib/session.ts';
-
-		(function performLogout() {
-			const messageEl = document.querySelector('[data-message]');
-			const session = readSession();
-			if (!session) {
-				messageEl.textContent = 'No había una sesión activa.';
-				return;
-			}
-
-			clearSession();
-			messageEl.textContent = 'Sesión local eliminada. Puedes volver a iniciar cuando gustes.';
-		})();
-	</script>
+	<script type="module" src={logoutScriptUrl}></script>
 </Layout>
 
 <style>
