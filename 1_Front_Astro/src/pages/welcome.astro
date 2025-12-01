@@ -31,8 +31,8 @@ import Layout from '../layouts/Layout.astro';
 		</section>
 	</main>
 
-	<script type="module">
-		import { readSession } from '../lib/session';
+	<script type="module" is:inline>
+		import { readSession } from '/src/lib/session.ts';
 
 		const session = readSession();
 		if (!session) {

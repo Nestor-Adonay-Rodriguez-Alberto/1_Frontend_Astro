@@ -47,9 +47,9 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 		</section>
 	</main>
 
-	<script type="module">
-		import { login } from '../lib/api';
-		import { saveSession } from '../lib/session';
+	<script type="module" is:inline>
+		import { login } from '/src/lib/api.ts';
+		import { saveSession } from '/src/lib/session.ts';
 
 		const form = document.querySelector('#login-form');
 		const statusElem = document.querySelector('[data-status]');
