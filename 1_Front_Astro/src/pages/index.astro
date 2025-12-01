@@ -1,0 +1,170 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
+	'https://1_backend_hono.nestor-adonay-rodriguez-alberto.workers.dev';
+---
+
+<Layout title="Panel de acceso" description="Flujo de login conectado a un Worker de Cloudflare">
+	<main>
+		<section>
+			<p class="eyebrow">Demo Astro + Cloudflare Worker</p>
+			<h1>Inicia sesión para ver la página protegida</h1>
+			<p>
+				Este ejemplo usa un Worker ya desplegado para validar credenciales mediante los endpoints
+				<code>/login</code> y <code>/logout</code>. Ingresa el usuario y contraseña configurados en el
+				Worker para continuar.
+			</p>
+		</section>
+
+		<section class="card">
+			<form id="login-form" autocomplete="off">
+				<label class="field">
+					<span>Usuario</span>
+					<input name="username" placeholder="admin" required />
+				</label>
+				<label class="field">
+					<span>Contraseña</span>
+					<input type="password" name="password" placeholder="••••••" required />
+				</label>
+				<button type="submit">Iniciar sesión</button>
+				<p class="status" data-status>Ingresa tus credenciales para continuar.</p>
+			</form>
+			<p class="hint">
+				El Worker configurado actualmente es:
+				<strong>{workerUrl}</strong>
+			</p>
+		</section>
+	</main>
+
+	<script type="module">
+		import { login } from '../lib/api';
+		import { saveSession } from '../lib/session';
+
+		const form = document.querySelector('#login-form');
+		const statusElem = document.querySelector('[data-status]');
+		const submitButton = form?.querySelector('button');
+
+		const setStatus = (message, variant = 'default') => {
+			if (!statusElem) return;
+			statusElem.textContent = message;
+			statusElem.dataset.variant = variant;
+		};
+
+		form?.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			const formData = new FormData(form);
+			const username = String(formData.get('username'));
+			const password = String(formData.get('password'));
+
+			setStatus('Validando credenciales…', 'info');
+			submitButton?.setAttribute('disabled', 'true');
+
+			try {
+				const result = await login({ username, password });
+				if (!result.success || !result.token) {
+					throw new Error(result.message || 'No se pudo iniciar sesión');
+				}
+
+				saveSession({
+					token: result.token,
+					username: result.user || username,
+					loginAt: new Date().toISOString(),
+				});
+
+				setStatus('Ingreso exitoso, redirigiendo…', 'success');
+				window.location.href = '/welcome';
+			} catch (error) {
+				const message = error instanceof Error ? error.message : 'Error inesperado';
+				setStatus(message, 'error');
+			} finally {
+				submitButton?.removeAttribute('disabled');
+			}
+		});
+	</script>
+</Layout>
+
+<style>
+	.card {
+		margin-top: 2rem;
+		padding: 2rem;
+		background: rgba(2, 6, 23, 0.7);
+		border-radius: 1rem;
+		border: 1px solid rgba(99, 102, 241, 0.3);
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		font-size: 0.95rem;
+		color: rgba(226, 232, 240, 0.85);
+	}
+
+	input {
+		border-radius: 0.75rem;
+		border: 1px solid rgba(148, 163, 184, 0.25);
+		background: rgba(15, 23, 42, 0.8);
+		color: inherit;
+		padding: 0.85rem 1rem;
+		font-size: 1rem;
+	}
+
+	button {
+		padding: 0.9rem 1rem;
+		border-radius: 0.9rem;
+		border: none;
+		font-size: 1rem;
+		font-weight: 600;
+		color: #0f172a;
+		background: linear-gradient(135deg, #a5b4fc, #c084fc);
+		transition: transform 0.2s ease, opacity 0.2s ease;
+	}
+
+	button:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	.status {
+		font-size: 0.9rem;
+		margin: 0;
+	}
+
+	.status[data-variant='error'] {
+		color: #fca5a5;
+	}
+
+	.status[data-variant='success'] {
+		color: #86efac;
+	}
+
+	.status[data-variant='info'] {
+		color: #bfdbfe;
+	}
+
+	.hint {
+		margin-top: 1.25rem;
+		font-size: 0.85rem;
+		color: rgba(148, 163, 184, 0.85);
+		word-break: break-all;
+	}
+
+	code {
+		background: rgba(15, 23, 42, 0.6);
+		border-radius: 0.5rem;
+		padding: 0.1rem 0.4rem;
+	}
+
+	@media (max-width: 720px) {
+		.card {
+			padding: 1.5rem;
+		}
+	}
+</style>

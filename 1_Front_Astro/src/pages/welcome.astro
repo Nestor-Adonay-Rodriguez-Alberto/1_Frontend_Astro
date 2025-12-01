@@ -1,0 +1,109 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Bienvenido" description="Zona protegida accesible tras un login exitoso">
+	<main>
+		<section>
+			<p class="eyebrow">Área privada</p>
+			<h1>¡Hola, <span data-username>usuario</span>! 🎉</h1>
+			<p>
+				Llegaste a la página protegida. Desde aquí puedes comprobar que la sesión se mantiene en el
+				navegador y cerrar sesión cuando gustes.
+			</p>
+		</section>
+
+		<section class="card">
+			<ul class="session-info">
+				<li>
+					<span>Token actual</span>
+					<code data-token>No disponible</code>
+				</li>
+				<li>
+					<span>Hora de login</span>
+					<strong data-login-at>-</strong>
+				</li>
+			</ul>
+			<div class="actions">
+				<a class="ghost" href="/">Volver al inicio</a>
+				<a class="primary" href="/logout">Cerrar sesión</a>
+			</div>
+		</section>
+	</main>
+
+	<script type="module">
+		import { readSession } from '../lib/session';
+
+		const session = readSession();
+		if (!session) {
+			window.location.replace('/');
+		} else {
+			document.querySelector('[data-username]').textContent = session.username;
+			document.querySelector('[data-token]').textContent = session.token;
+			document.querySelector('[data-login-at]').textContent = new Date(session.loginAt).toLocaleString();
+		}
+	</script>
+</Layout>
+
+<style>
+	.session-info {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.session-info li {
+		background: rgba(15, 23, 42, 0.7);
+		border-radius: 0.9rem;
+		padding: 1rem 1.25rem;
+		border: 1px solid rgba(148, 163, 184, 0.25);
+	}
+
+	.session-info span {
+		display: block;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.11em;
+		color: rgba(148, 163, 184, 0.85);
+		margin-bottom: 0.35rem;
+	}
+
+	.actions {
+		display: flex;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+	}
+
+	.actions a {
+		text-align: center;
+		padding: 0.85rem 1rem;
+		border-radius: 0.85rem;
+		border: 1px solid rgba(148, 163, 184, 0.25);
+		flex: 1;
+		font-weight: 600;
+	}
+
+	.actions .primary {
+		background: linear-gradient(135deg, #fb7185, #f472b6);
+		border: none;
+		color: #0f172a;
+	}
+
+	.actions .ghost {
+		color: rgba(226, 232, 240, 0.9);
+	}
+
+	code {
+		word-break: break-all;
+		display: block;
+	}
+
+	@media (max-width: 640px) {
+		.actions {
+			flex-direction: column;
+		}
+	}
+</style>

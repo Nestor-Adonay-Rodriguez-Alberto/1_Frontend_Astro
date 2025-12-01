@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Cerrar sesión" description="Finaliza la sesión activa contra el Worker de autenticación">
+	<main>
+		<section class="card">
+			<h1>Hasta pronto 👋</h1>
+			<p data-message>Estamos cerrando tu sesión…</p>
+			<a class="ghost" href="/">Volver al inicio</a>
+		</section>
+	</main>
+
+	<script type="module">
+		import { logout } from '../lib/api';
+		import { readSession, clearSession } from '../lib/session';
+
+		async function performLogout() {
+			const messageEl = document.querySelector('[data-message]');
+			const session = readSession();
+			if (!session) {
+				messageEl.textContent = 'No había una sesión activa.';
+				return;
+			}
+
+			try {
+				await logout(session.token);
+				messageEl.textContent = 'Sesión cerrada correctamente.';
+			} catch (error) {
+				messageEl.textContent = 'No se pudo notificar al Worker, pero la sesión local fue eliminada.';
+			} finally {
+				clearSession();
+			}
+		}
+
+		performLogout();
+	</script>
+</Layout>
+
+<style>
+	.card {
+		margin: 4rem auto;
+		max-width: 480px;
+		text-align: center;
+	}
+
+	.ghost {
+		display: inline-block;
+		margin-top: 1.5rem;
+	}
+</style>
