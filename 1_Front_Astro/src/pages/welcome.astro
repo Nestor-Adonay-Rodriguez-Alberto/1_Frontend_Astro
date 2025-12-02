@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import welcomeScriptUrl from '../scripts/welcome.js?url';
 ---
 
 <Layout title="Bienvenido" description="Zona protegida accesible tras un login exitoso">
@@ -32,7 +31,7 @@ import welcomeScriptUrl from '../scripts/welcome.js?url';
 		</section>
 	</main>
 
-	<script type="module" src={welcomeScriptUrl}></script>
+	<script type="module" src="/scripts/welcome.js"></script>
 </Layout>
 
 <style>

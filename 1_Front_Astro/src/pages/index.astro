@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import loginScriptUrl from '../scripts/login.js?url';
 
 const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 	'https://1_backend_hono.nestor-adonay-rodriguez-alberto.workers.dev';
@@ -19,7 +18,7 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 		</section>
 
 		<section class="card">
-			<form id="login-form" autocomplete="off">
+			<form id="login-form" autocomplete="off" data-worker-url={workerUrl}>
 				<label class="field">
 					<span>Usuario</span>
 					<input name="username" placeholder="admin" required />
@@ -48,7 +47,7 @@ const workerUrl = import.meta.env.PUBLIC_WORKER_BASE_URL ||
 		</section>
 	</main>
 
-	<script type="module" src={loginScriptUrl}></script>
+	<script type="module" src="/scripts/login.js"></script>
 </Layout>
 
 <style>

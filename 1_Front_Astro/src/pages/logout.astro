@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import logoutScriptUrl from '../scripts/logout.js?url';
 ---
 
 <Layout title="Cerrar sesión" description="Finaliza la sesión local protegida en Astro">
@@ -12,7 +11,7 @@ import logoutScriptUrl from '../scripts/logout.js?url';
 		</section>
 	</main>
 
-	<script type="module" src={logoutScriptUrl}></script>
+	<script type="module" src="/scripts/logout.js"></script>
 </Layout>
 
 <style>
